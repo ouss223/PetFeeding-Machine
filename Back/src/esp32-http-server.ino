@@ -8,6 +8,7 @@
 #include <ArduinoJson.h>
 #include <RTClib.h>
 #include <HX711.h>
+#include <PubSubClient.h>
 
 using namespace std;
 #define WIFI_SSID "Wokwi-GUEST"
@@ -17,10 +18,21 @@ using namespace std;
 #include "Pins.h"
 #include "Machine.h"
 #include "ServerHandlers.h"
-//use ngrok to get a public ip address to use alexa skill
-//go to alexa dev change the api to what grok gave you
-//ask alexa this to get the stock percentage ; Alexa, ask Pet Feeder how full is the food container
+//ask alexa this to get the stocks percentages ; Alexa, ask Pet Feeder how full is the food container
 //dont forget to include alexa code and stuff in the rapport
+//website for seeing mqtt messages : https://testclient-cloud.mqtt.cool
+
+const char* mqtt_server = "test.mosquitto.org";  
+const int mqtt_port = 1883;                      
+//const char* mqtt_user = "ousemaa";         
+//const char* mqtt_pass = "Project9"; 
+
+const char* mqtt_topic = "petfeeder/foodstock";
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+
+
 WebServer server(80);
 
 Servo myServo;
@@ -79,6 +91,9 @@ void setup(void)
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
+
+  client.setServer(mqtt_server, mqtt_port);
+
   server.on("/getDistance", HTTP_GET, handleGetDistance);
   server.on("/setMode", HTTP_POST, handleSetMode);
   server.on("/getMode", HTTP_GET, handleGetMode);
@@ -90,22 +105,28 @@ void setup(void)
 
   server.begin();
   Serial.println("HTTP server started");
+
+
 }
 unsigned long servoMoveStartTime = 0;
 unsigned long servoDelay = 1000;
 bool servoMoving = false;
 
-// Stores the last time the action was performed
+// Stores the last time the action was performed(do it every "interval" time)
 unsigned long interval = 200;
 
 void loop(void)
 {
+  if (!client.connected()) {
+    reconnect();
+  }
+  client.loop(); 
+
+
   DateTime now = rtc.now();
 
-  // Print the current date and time
 
   unsigned long currentMillis = millis();
-  Serial.print(now.year(), DEC);
 
   server.handleClient();
 
@@ -165,25 +186,49 @@ void loop(void)
     {
       myMachine.resetFoodTracking(); // Reset food consumption tracking
     }
-    vector<vector<int>> schedule = myMachine.getSchedule();
     if (choice == 2)
     {
+      vector<vector<int>> schedule = myMachine.getSchedule();
       if (now.hour() == schedule[0][1] && now.minute() == schedule[0][0] || now.hour() == schedule[1][1] && now.minute() == schedule[1][0] || now.hour() == schedule[2][1] && now.minute() == schedule[2][0])
       {
 
         if (!servoMoving)
         {
-          myServo.write(180);            // Move the servo to dispense food
-          servoMoveStartTime = millis(); // Start timing the servo movement
-          servoMoving = true;            // Set the servo state to moving
+          myServo.write(180);           
+          servoMoveStartTime = millis(); 
+          servoMoving = true;           
           Serial.println("Food dispensed");
         }
       }
     }
     if (servoMoving && (millis() - servoMoveStartTime >= servoDelay))
     {
-      myServo.write(0);    // Move the servo back
-      servoMoving = false; // Reset the servo state to idle
+      myServo.write(0);   
+      servoMoving = false; 
     }
   }
+  publishStock(myMachine.getStockFood(),myMachine.getStockWater());//publish to broker
+}
+
+
+
+void reconnect() {
+  while (!client.connected()) {
+    Serial.println("Attempting MQTT connection...");
+    String clientId = "esp32-sol-clientId-";
+    clientId += String(random(0xffff), HEX); //gives a random 4 chars hex string to the client id
+    if (client.connect(clientId.c_str())) {
+      Serial.println("Connected");
+      client.subscribe("petfeeder/fooddtock");//topic we're working on
+    } else {
+      delay(5000);
+    }
+  }
+}
+
+
+void publishStock(float stockFood, float stockWater) {
+  //gonna publish in json format
+  String payload = "{\"food\":" + String(stockFood) + ",\"water\":" + String(stockWater) + "}";
+  client.publish(mqtt_topic, payload.c_str());
 }
