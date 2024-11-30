@@ -12,7 +12,7 @@
       "left": 139.9,
       "attrs": { "distance": "3" }
     },
-    { "type": "wokwi-pir-motion-sensor", "id": "pir1", "top": 378.4, "left": 395.82, "attrs": {} },
+   
     {
       "type": "wokwi-lcd2004",
       "id": "lcd1",
