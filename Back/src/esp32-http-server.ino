@@ -22,7 +22,7 @@ using namespace std;
 //dont forget to include alexa code and stuff in the rapport
 //website for seeing mqtt messages : https://testclient-cloud.mqtt.cool
 
-const char* mqtt_server = "test.mosquitto.org";  
+const char* mqtt_server = "broker.mqtt.cool";  
 const int mqtt_port = 1883;                      
 //const char* mqtt_user = "ousemaa";         
 //const char* mqtt_pass = "Project9"; 
@@ -40,28 +40,32 @@ RTC_DS1307 rtc;
 
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 HX711 scale;
+HX711 scale1;
+HX711 scale2;
+
 int choice = 0; // 1 = normal mode, 2 = scheduled mode
 unsigned long previousMillis = 0;
-int calibration_factor = 420;
+int calibration_factor = 420; //done through experimenting , raw_value / known_weight , here for 100g it gave 42000
 
-char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
 void setup(void)
 {
   previousMillis = millis();
-  Serial.begin(115200);
+  Serial.begin(921600);
 
   Serial.println("Starting..m::m:mmmmm.");
   pinMode(ECHO1, INPUT);
   pinMode(TRIG1, OUTPUT);
-  pinMode(TRIG2, OUTPUT);
-  pinMode(ECHO2, INPUT);
   pinMode(TRIG3, OUTPUT);
   pinMode(ECHO3, INPUT);
-  pinMode(TRIG4, OUTPUT);
-  pinMode(ECHO4, INPUT);
   scale.begin(DT, SCK);
+  scale1.begin(DT1, SCK1); // 1 is for stock
+  scale2.begin(DT2, SCK2); // 2 is for the served , water density = 1  so weight is same as mass
+
   scale.set_scale(calibration_factor);
+  scale1.set_scale(calibration_factor);
+  scale2.set_scale(calibration_factor);
+  
   Wire.begin(SDA_time, SCL_time);
 
   if (!rtc.begin())
@@ -71,8 +75,8 @@ void setup(void)
       ;
   }
 
-  myMachine.setStockFood(getDistance(3));
-  myMachine.setStockWater(getDistance(4));
+  myMachine.setStockFood(getDistance(2));
+  myMachine.setStockWater(scale1.get_units(10));
 
   float initialFoodWeight = scale.get_units(10); // Get initial food weight
   myMachine.initializeFoodTracking(initialFoodWeight);
@@ -93,8 +97,8 @@ void setup(void)
 
 
   client.setServer(mqtt_server, mqtt_port);
+  client.setCallback(mqttCallback);
 
-  server.on("/getDistance", HTTP_GET, handleGetDistance);
   server.on("/setMode", HTTP_POST, handleSetMode);
   server.on("/getMode", HTTP_GET, handleGetMode);
   server.on("/getInfos", HTTP_GET, handleGetInfos);
@@ -113,7 +117,8 @@ unsigned long servoDelay = 1000;
 bool servoMoving = false;
 
 // Stores the last time the action was performed(do it every "interval" time)
-unsigned long interval = 200;
+unsigned long interval = 2
+00;
 
 void loop(void)
 {
@@ -130,21 +135,16 @@ void loop(void)
 
   server.handleClient();
 
-  if (choice == 1)
-  {
-    Serial.println("Normal refill mode active");
-  }
-  else if (choice == 2)
-  {
-    Serial.println("Scheduled refill mode active");
-  }
+
   if (currentMillis - previousMillis >= interval)
   {
     previousMillis = currentMillis;
     myMachine.setServedFood(getDistance(1));
-    myMachine.setServedWater(getDistance(2));
-    myMachine.setStockFood(getDistance(3));
-    myMachine.setStockWater(getDistance(4));
+    myMachine.setServedWater(scale2.get_units(3));
+    myMachine.setStockFood(getDistance(2));
+    myMachine.setStockWater(scale1.get_units(3));
+
+
     // print schedule
     lcd.clear();
     lcd.setCursor(0, 0);
@@ -156,20 +156,20 @@ void loop(void)
 
     lcd.setCursor(0, 2);
     lcd.print("Water: ");
-    lcd.print(myMachine.getStockWater() / 4);
+
+    lcd.print(String(myMachine.getStockWater() * 20, 2));
+
     lcd.print("%");
 
-    float currentFoodWeight = scale.get_units(10);
+    float currentFoodWeight = scale.get_units(3);
 
     // Update food consumption logic (track consumed food)
     myMachine.updateFoodConsumption(currentFoodWeight);
 
     // Print the total food consumed today
-    Serial.print("Food consumed today: ");
-    Serial.println(myMachine.getTotalFoodConsumed());
     if (choice == 1)
     {
-      if (myMachine.getStockFood() < 10)
+      if (myMachine.getServedFood() < 10)
       {
         if (!servoMoving)
         {
@@ -220,6 +220,7 @@ void reconnect() {
     if (client.connect(clientId.c_str())) {
       Serial.println("Connected");
       client.subscribe("petfeeder/fooddtock");//topic we're working on
+      client.subscribe("feedback");     
     } else {
       delay(5000);
     }
@@ -229,6 +230,16 @@ void reconnect() {
 
 void publishStock(float stockFood, float stockWater) {
   //gonna publish in json format
-  String payload = "{\"food\":" + String(stockFood) + ",\"water\":" + String(stockWater) + "}";
+  String payload = "{\"food\":" + String(stockFood / 4, 2) + ",\"water\":" + (stockWater*20) + "}";
   client.publish(mqtt_topic, payload.c_str());
+}
+void mqttCallback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message arrived in topic: ");
+  Serial.println(topic);
+  Serial.print("Message: ");
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println();
+
 }
