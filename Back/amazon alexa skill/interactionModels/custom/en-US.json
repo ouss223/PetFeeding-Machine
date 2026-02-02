@@ -1,0 +1,57 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "pet feeder",
+            "intents": [
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "HelloWorldIntent",
+                    "slots": [],
+                    "samples": [
+                        "hello",
+                        "how are you",
+                        "say hi world",
+                        "say hi",
+                        "hi",
+                        "say hello world",
+                        "say hello"
+                    ]
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.FallbackIntent",
+                    "samples": []
+                },
+                {
+                    "name": "GetFoodStockIntent",
+                    "slots": [],
+                    "samples": [
+                        "How full is the food container",
+                        "Check the current food level",
+                        "How much food do I have left",
+                        "What is the current food stock state",
+                        "Tell me the food level",
+                        "How much food is left",
+                        "What is the food stock level",
+                        "Give me the food stock state"
+                    ]
+                }
+            ],
+            "types": []
+        }
+    }
+}
