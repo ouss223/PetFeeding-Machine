@@ -35,21 +35,21 @@ const First = () => {
   }, []);
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-800 text-white">
         <div className="text-2xl font-bold">Loading...</div>
         
       </div>
     );
   } else if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-800 text-white">
         <div className="text-2xl font-bold">Error...</div>
       </div>
     );
   }
 
   return (
-    <div className="pt-20 min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 flex flex-col items-center justify-center text-white p-6">
+    <div className="pt-20 min-h-screen bg-gradient-to-r from-blue-500 to-blue-800 flex flex-col items-center justify-center text-white p-6">
       <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-md text-center space-y-6">
         <h1 className="text-3xl font-extrabold text-blue-600 mb-4">
           Pet Feeding Tracker

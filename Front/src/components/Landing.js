@@ -1,4 +1,4 @@
-import { ClipLoader } from "react-spinners"; // Import the spinner
+import { ClipLoader } from "react-spinners"; 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -8,8 +8,9 @@ function App() {
   const [distance, setDistance] = useState(null);
   const [mode, setMode] = useState(null);
   const [error, setError] = useState(null);
-  const [loadingButton1, setLoadingButton1] = useState(false); // Track loading for Button 1
-  const [loadingButton2, setLoadingButton2] = useState(false); // Track loading for Button 2
+  //loading states
+  const [loadingButton1, setLoadingButton1] = useState(false); 
+  const [loadingButton2, setLoadingButton2] = useState(false); 
   const navigate = useNavigate();
 
 
@@ -37,9 +38,9 @@ function App() {
       setError("Failed to set device mode");
     } finally {
       if (newMode === 1) {
-        setLoadingButton1(false); // Stop loading for Button 1
+        setLoadingButton1(false); 
       } else if (newMode === 2) {
-        setLoadingButton2(false); // Stop loading for Button 2
+        setLoadingButton2(false); 
       }
     }
   };
@@ -62,7 +63,7 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 text-gray-800 p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-blue-500 to-blue-800 text-gray-800 p-6">
       <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold mb-6 text-center text-blue-600">
           ESP32 Control Panel

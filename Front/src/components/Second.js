@@ -91,20 +91,20 @@ const SecondComponent = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-800 text-white">
         <div className="text-2xl font-bold">Loading...</div>
       </div>
     );
   } else if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-800 text-white">
         <div className="text-2xl font-bold">Error...</div>
       </div>
     );
   }
 
   return (
-    <div className=" pt-20 min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-blue-500  p-6 to-purple-600 text-white">
+    <div className=" pt-20 min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-blue-500  p-6 to-blue-800 text-white">
       <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-md">
         <h1 className="text-2xl font-bold text-center text-blue-600 mb-6">
           Schedule Times
