@@ -5,9 +5,7 @@ import { useNavigate } from "react-router-dom";
 const ESP32_API = "http://localhost:8180";
 
 function App() {
-  const [distance, setDistance] = useState(null);
   const [mode, setMode] = useState(null);
-  const [error, setError] = useState(null);
   //loading states
   const [loadingButton1, setLoadingButton1] = useState(false); 
   const [loadingButton2, setLoadingButton2] = useState(false); 
@@ -31,11 +29,9 @@ function App() {
       });
       if (!response.ok) throw new Error(`Error: ${response.statusText}`);
       setMode(newMode);
-      setError(null);
       newMode === 1 ? navigate("/first") : navigate("/second");
     } catch (err) {
       console.error(err);
-      setError("Failed to set device mode");
     } finally {
       if (newMode === 1) {
         setLoadingButton1(false); 
@@ -51,10 +47,8 @@ function App() {
       const data = await response.json();
       setMode(data.mode);
       console.log(data);
-      setError(null);
     } catch (err) {
       console.error(err);
-      setError("Failed to fetch distance");
     }
   };
 
@@ -78,13 +72,13 @@ function App() {
               ? "Normal Mode"
               : mode === 2
               ? "Scheduled Mode"
-              : mode == 0
+              : mode === 0
               ? "None"
               : "Loading ..."}
           </span>
         </p>
 
-        {mode == 0 && (<>
+        {mode === 0 && (<>
             <p className="text-lg font-semibold text-center mt-10">
             Choode Device Mode :
             </p>
@@ -114,7 +108,7 @@ function App() {
             </button>
           </div></>
         )}
-        {(mode == 1 || mode == 2) && (
+        {(mode === 1 || mode === 2) && (
           <div className="flex justify-around mt-6">
             <button
               onClick={() => (mode === 1 ? navigate("/first") : navigate("/second"))}

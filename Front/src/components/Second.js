@@ -13,7 +13,6 @@ const SecondComponent = () => {
   const [loading, setLoading] = useState(true); // Add loading state
   const [editing, setEditing] = useState(false);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
-  const foodie = <FoodStats />; // Create an instance of the FoodStats component
 
   const handleTimeChange = (index, timeIndex, value) => {
     const newTimes = [...times];
